@@ -2,16 +2,10 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from .managers import UserManager
 
 
 class User(AbstractUser):
-    """
-    Custom User model extending Django's AbstractUser.
-
-    Adds additional fields for user profiles and manages
-    user authentication and authorization.
-    """
-
     email = models.EmailField(
         _('email address'),
         unique=True,
@@ -49,6 +43,8 @@ class User(AbstractUser):
         auto_now=True
     )
 
+    object = UserManager()
+
     class Meta:
         verbose_name = _('user')
         verbose_name_plural = _('users')
@@ -60,38 +56,23 @@ class User(AbstractUser):
         ]
 
     def __str__(self) -> str:
-        """Return string representation of the user."""
         return self.username
 
     def get_absolute_url(self) -> str:
-        """Return the URL for the user's profile."""
         return reverse('accounts:profile', kwargs={'username': self.username})
 
     def get_full_name(self) -> str:
-        """
-        Return the first_name plus the last_name, with a space in between.
-        If no first or last name, return username.
-        """
         full_name = super().get_full_name()
         return full_name if full_name else self.username
 
     def get_ratings_count(self) -> int:
-        """Return the number of ratings given by this user."""
         return self.ratings.count()
 
     def get_comments_count(self) -> int:
-        """Return the number of comments made by this user."""
         return self.comments.count()
 
 
 class EmailVerificationToken(models.Model):
-    """
-    Token for email verification.
-
-    Stores unique tokens sent to users for email verification
-    during registration.
-    """
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -130,27 +111,18 @@ class EmailVerificationToken(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return string representation of the token."""
         return f"Token for {self.user.username}"
 
     def is_expired(self) -> bool:
-        """Check if the token has expired."""
         from django.utils import timezone
         return timezone.now() > self.expires_at
 
     def mark_as_used(self) -> None:
-        """Mark the token as used."""
         self.is_used = True
         self.save(update_fields=['is_used'])
 
 
 class PasswordResetToken(models.Model):
-    """
-    Token for password reset.
-
-    Stores unique tokens sent to users for password reset requests.
-    """
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -189,15 +161,12 @@ class PasswordResetToken(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return string representation of the token."""
         return f"Password reset token for {self.user.username}"
 
     def is_expired(self) -> bool:
-        """Check if the token has expired."""
         from django.utils import timezone
         return timezone.now() > self.expires_at
 
     def mark_as_used(self) -> None:
-        """Mark the token as used."""
         self.is_used = True
         self.save(update_fields=['is_used'])
