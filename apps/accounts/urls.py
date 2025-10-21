@@ -25,4 +25,6 @@ urlpatterns = [
     # Profile URLs
     path('profile/<str:username>/', views.UserProfileView.as_view(), name='profile'),
     path('settings/', views.UserProfileUpdateView.as_view(), name='settings'),
+
+    path('', views.home_views, name='home')
 ]

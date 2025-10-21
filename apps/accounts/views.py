@@ -35,6 +35,9 @@ from .tasks import send_verification_email, send_password_reset_email
 
 User = get_user_model()
 
+def home_views(request):
+    return render(request, 'movies/home.html')
+
 
 class UserRegistrationView(CreateView):
     """
@@ -52,7 +55,7 @@ class UserRegistrationView(CreateView):
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """Redirect authenticated users to home page."""
         if request.user.is_authenticated:
-            return redirect('home')
+            return redirect('accounts:home')
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form: UserRegistrationForm) -> HttpResponse:
@@ -190,8 +193,8 @@ class UserProfileView(DetailView):
         context = super().get_context_data(**kwargs)
         user = self.object
 
-        context['ratings_count'] = user.get_ratings_count()
-        context['comments_count'] = user.get_comments_count()
+        # context['ratings_count'] = user.get_ratings_count()
+        # context['comments_count'] = user.get_comments_count()
 
         # Get recent ratings (will be implemented when ratings app is ready)
         # context['recent_ratings'] = user.ratings.select_related('movie')[:5]
